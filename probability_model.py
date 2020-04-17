@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import editdistance
 
 ratings = pd.read_csv('data/BX-Book-Ratings.csv',
                     usecols=['User-ID', 'ISBN', 'Book-Rating'],
@@ -36,9 +37,18 @@ isbns_fil = cnts[cnts > TOTAL_RATINGS_THRESH].index
 print('Number of books with >%d ratings: %d' %(TOTAL_RATINGS_THRESH, len(isbns_fil)))
 rat_exp = rat_explicit[rat_explicit.ISBN.isin(isbns_fil)]
 rat_all = ratings[ratings.ISBN.isin(isbns_fil)]
+books = books[books.ISBN.isin(isbns_fil)]
 
 query_isbn = isbns_fil[531]
 query_name = books[books.ISBN == query_isbn]['Book-Title'].item()
+
+query_name = ''.lower()
+distances = books['Book-Title'].apply(lambda x: editdistance.eval(x.lower(), query_name))
+query = books[books.index == distances.idxmin()]
+
+query_name = query['Book-Title'].item()
+query_isbn = query['ISBN'].item()
+
 print('Query book: %s' % query_name)
 print('Query ratings: %d' % rat_exp[rat_exp.ISBN == query_isbn]['Book-Rating'].count())
 print('Mean query rating: %.2f' % rat_exp[rat_exp.ISBN == query_isbn]['Book-Rating'].mean())
