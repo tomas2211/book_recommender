@@ -6,6 +6,7 @@ import pickle
 from data_utils import load_ratings
 from gmodel import Gmodel
 from n2vmodel import N2Vmodel
+from knn_model import KNNmodel
 from pandarallel import pandarallel
 import argparse
 import os
@@ -128,6 +129,8 @@ if __name__ == "__main__":
         )
     elif args.model == 'n2vmodel':
         model = N2Vmodel(embed_fn=args.n2vmodel_embed_fn)
+    elif args.model == 'knnmodel':
+        model = KNNmodel(ratings_train)
     else:
         raise RuntimeError('Invalid model specified: {}'.format(args.model))
 
