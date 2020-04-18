@@ -28,7 +28,7 @@ class Pmodel:
                            )
             users_liking = self.rat_all[ratings_mask]['User-ID']
         else:
-            ratings_mask = (self.rat_explicit.ISBN == query_isbn) & (self.rat_explicit['Book-Rating'] > self.thresh_like_rating)
+            ratings_mask = (self.rat_explicit.ISBN == query_isbn) & (self.rat_explicit['Book-Rating'] >= self.thresh_like_rating)
             users_liking = self.rat_explicit[ratings_mask]['User-ID']
 
         if verbose:
@@ -65,6 +65,6 @@ class Pmodel:
             book_scores = book_scores.append(filling)
 
         if ret_scores:
-            return book_scores.index[:ret_k], book_scores['Book-Rating'][:ret_k]
+            return book_scores.index[:ret_k], book_scores.values[:ret_k]
         else:
             return book_scores.index[:ret_k]
