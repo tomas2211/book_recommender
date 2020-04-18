@@ -85,9 +85,7 @@ if __name__ == "__main__":
 
     # Filter ratings to explicit and by isbns_filtered
     rat_explicit = ratings[ratings['Book-Rating'] != 0]
-    cnts = rat_explicit['ISBN'].value_counts()
     rat_exp = rat_explicit[rat_explicit.ISBN.isin(isbns_filtered)]
-
     rat = ratings[ratings.ISBN.isin(isbns_filtered)]
 
     # Generate graph with coratings
