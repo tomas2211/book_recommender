@@ -4,8 +4,7 @@ import numpy as np
 
 class Pmodel:
     def __init__(
-            self, ratings: pd.DataFrame, verbose=False,
-            filter_books_numratings=9,
+            self, ratings: pd.DataFrame,
             thresh_like_rating=5,
             sigma_mul=1.0,
             implicit_means_like=False
@@ -15,23 +14,11 @@ class Pmodel:
         self.implicit_means_like = implicit_means_like
 
         # Filter out explicit ratings (!= 0)
-        rat_explicit = ratings[ratings['Book-Rating'] != 0]
+        self.rat_all = ratings
+        self.rat_explicit = ratings[ratings['Book-Rating'] != 0]
 
-        # Filter books by number of ratings (thresh_min_ratings)
-        cnts = rat_explicit['ISBN'].value_counts()
-        self.isbns_filtered = cnts[cnts > filter_books_numratings].index
-        if verbose:
-            print('Number of books with >%d ratings: %d' % (filter_books_numratings, len(self.isbns_filtered)))
-        self.rat_explicit = rat_explicit[rat_explicit.ISBN.isin(self.isbns_filtered)]  # store explicit and all ratings
-        self.rat_all = ratings[ratings.ISBN.isin(self.isbns_filtered)]
 
-    def __call__(self, query_isbn, ret_results=5, verbose=False):
-        # verify the ISBN is in the filtered set
-        if query_isbn not in self.isbns_filtered:
-            if verbose:
-                print('ISBN: %s not among the filtered.' % query_isbn)
-            return None
-
+    def __call__(self, query_isbn, ret_k=5, verbose=False, ret_scores=False, fill_to_k=False):
         # Extract all users that like the query
         if self.implicit_means_like:
             ratings_mask = (self.rat_all.ISBN == query_isbn) \
@@ -60,7 +47,7 @@ class Pmodel:
         ratings_mean = rat_rel_grouped.mean()
 
         # compute std if we can (i.e more than 2 relevant ratings) for at least K books
-        if (ratings_cnt >= 2).sum() >= ret_results:
+        if (ratings_cnt >= 2).sum() >= ret_k:
             ratings_mean = ratings_mean[ratings_cnt > 2]
             ratings_std = rat_rel_grouped.std()[ratings_cnt > 2]
             # subtract std to get minimal expected (on level of certainty) ratings
@@ -69,5 +56,15 @@ class Pmodel:
             book_scores = ratings_mean
 
         book_scores = book_scores.sort_values(ascending=False)
+        book_scores = book_scores[book_scores.index != query_isbn]  # remove the query book if present
 
-        return book_scores.index[:ret_results], book_scores.values[:ret_results]
+        if fill_to_k and len(book_scores) < ret_k:
+            miss_n = ret_k - len(book_scores)
+            # filling = pd.Series({'Book-Rating': [0] * miss_n})
+            filling = self.rat_explicit.groupby('ISBN')['Book-Rating'].mean().sort_values(ascending=False)[:miss_n]
+            book_scores = book_scores.append(filling)
+
+        if ret_scores:
+            return book_scores.index[:ret_k], book_scores['Book-Rating'][:ret_k]
+        else:
+            return book_scores.index[:ret_k]
