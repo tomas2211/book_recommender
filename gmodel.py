@@ -9,10 +9,11 @@ import os
 
 
 class Gmodel():
-    def __init__(self, graph_path='data/corat_graph_18-04-2020_1655', sigma_mul=1.0):
+    def __init__(self, graph_path='data/corat_graph_18-04-2020_1655', sigma_mul=1.0, robdist_clip=40, minimal_corats=2):
         G = nx.read_gpickle(graph_path)
-        self.Gf = filter_graph(G, minimal_corats=2, sigma_mul=sigma_mul, robdist_clip=40)
-        self.nodes_by_deg = [n for n, _ in sorted(Gf.degree, key=lambda x: x[1], reverse=True)]  # sort nodes by degree
+        self.Gf = filter_graph(G, minimal_corats=minimal_corats, sigma_mul=sigma_mul, robdist_clip=robdist_clip)
+        self.nodes_by_deg = \
+            [n for n, _ in sorted(self.Gf.degree, key=lambda x: x[1], reverse=True)]  # sort nodes by degree
 
     def __call__(self, query_isbn, ret_k=5, verbose=False, ret_scores=False, fill_to_k=False):
         cutoff = 20
