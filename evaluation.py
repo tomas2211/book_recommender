@@ -1,12 +1,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from pmodel import Pmodel
+from models.pmodel import Pmodel
 from tqdm import tqdm
 import pickle
 from data_utils import load_ratings
-from gmodel import Gmodel
-from n2vmodel import N2Vmodel
-from knn_model import KNNmodel
+from models.gmodel import Gmodel
+from models.n2vmodel import N2Vmodel
+from models.knn_model import KNNmodel
 from pandarallel import pandarallel
 import argparse
 import os

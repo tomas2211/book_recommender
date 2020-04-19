@@ -5,7 +5,7 @@ import networkx as nx
 from gensim.models import Word2Vec
 
 import node2vec.src.node2vec as n2v
-from gmodel import filter_graph
+from models.gmodel import filter_graph
 
 
 class N2Vmodel:
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     import logging
 
     # Generate random walks and train w2v model
-    graph_path = 'data/corat_graph_18-04-2020_1655'
+    graph_path = '../data/corat_graph_18-04-2020_1655'
     G = nx.read_gpickle(graph_path)
     Gf = filter_graph(G, minimal_corats=3, sigma_mul=0.1, robdist_clip=80)
 
@@ -35,13 +35,13 @@ if __name__ == '__main__':
     G = n2v.Graph(Gf, is_directed=False, p=0.8, q=1.5)
     G.preprocess_transition_probs()
 
-    with open('n2v_save/n2v_graph_preproc', 'wb') as f:
+    with open('../n2v_save/n2v_graph_preproc', 'wb') as f:
         pickle.dump(G, f)
 
     walks = G.simulate_walks(num_walks=50, walk_length=80)
     walks = [list(map(str, walk)) for walk in walks]
 
-    with open('n2v_save/n2v_walks_preproc', 'wb') as f:
+    with open('../n2v_save/n2v_walks_preproc', 'wb') as f:
         pickle.dump(walks, f)
 
     logging.basicConfig(level=logging.INFO)

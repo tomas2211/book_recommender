@@ -3,7 +3,7 @@
 K=10
 LIKE_THRESH=5
 
-python eval_model.py \
+python evaluation.py \
     --out_folder "eval/knnmodel_K-$K-Like-$LIKE_THRESH" \
     --model knnmodel \
     --K $K \

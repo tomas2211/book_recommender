@@ -9,7 +9,7 @@ import os
 
 
 class Gmodel():
-    def __init__(self, graph_path='data/corat_graph_18-04-2020_1655', sigma_mul=1.0, robdist_clip=40, minimal_corats=2):
+    def __init__(self, graph_path='data/corat_graph_18-04-2020_1655', sigma_mul=1.0, robdist_clip=40, minimal_corats=3):
         G = nx.read_gpickle(graph_path)
         self.Gf = filter_graph(G, minimal_corats=minimal_corats, sigma_mul=sigma_mul, robdist_clip=robdist_clip)
         self.nodes_by_deg = \
@@ -129,8 +129,8 @@ if __name__ == "__main__":
     nx.write_gpickle(G, 'data/corat_graph_%s' % time.strftime('%d-%m-%Y_%H%M'))
 
     # Stat the graph
-    if not os.path.exists('vis'):
-        os.mkdir('vis')
+    if not os.path.exists('../vis'):
+        os.mkdir('../vis')
 
     Gf = filter_graph(G, minimal_corats=4, sigma_mul=SIGMA_MUL, robdist_clip=40)  # filter to compute edge costs
 
