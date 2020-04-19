@@ -48,31 +48,46 @@ def graph_addedge_cumulative(u, v, w, G):
         G.add_edge(u, v, weight_sq=w ** 2, weight=w, n=1)
 
 
-def filter_graph(G, minimal_corats=2, sigma_mul=1.0, robdist_clip=40):
+def filter_edge(d, sigma_mul=1.0):
+    corat = d['weight'] / d['n']  # mean corating
+    ncorat = corat / 100  # normalize - range 0.01 to 1
+
+    corat_std = np.sqrt(d['weight_sq'] / d['n'] - corat ** 2)  # calc corating std
+    ncorat_std = corat_std / 100
+
+    # calculate robust distance
+    closeness = ncorat - sigma_mul * ncorat_std  # divisor
+    if closeness < 0.01:  # too close to zero or negative
+        closeness = 0.01
+
+    rob_dist = 1 / closeness
+    return {
+        'n': d['n'] / 2,
+        'corat': corat, 'ncorat': ncorat,
+        'corat_std': corat_std, 'ncorat_std': ncorat_std,
+        'rob_dist': rob_dist, 'closeness': closeness
+    }
+
+
+def filter_graph(G, minimal_corats=2, sigma_mul=1.0, robdist_clip=40, small_component=4, small_comp_add=3):
     Gf = nx.Graph()
     Gf.add_nodes_from(G.nodes)
 
-    for u, v, d in tqdm(G.edges(data=True)):  # process information from edges
+    for u, v, d in tqdm(G.edges(data=True), desc='Filtering edges'):  # process information from edges
         n = d['n'] / 2  # number of coratings
         if n >= minimal_corats:
-            corat = d['weight'] / d['n']  # mean corating
-            ncorat = corat / 100  # normalize - range 0.01 to 1
+            edge_dat = filter_edge(d, sigma_mul)
+            if edge_dat['rob_dist'] < robdist_clip:
+                Gf.add_edge(u, v, **edge_dat)
 
-            corat_std = np.sqrt(d['weight_sq'] / d['n'] - corat ** 2)  # calc corating std
-            ncorat_std = corat_std / 100
-
-            # calculate robust distance
-            div = ncorat - sigma_mul * ncorat_std  # divisor
-            if np.abs(div) < 0.1:  # too close to zero
-                div = 0.1
-
-            nweight_inv = 1 / div
-            rob_dist = np.exp(nweight_inv).clip(0, robdist_clip)
-            Gf.add_edge(
-                u, v, n=n, corat=corat, ncorat=ncorat,
-                corat_std=corat_std, ncorat_std=ncorat_std,
-                nweight_inv=nweight_inv, rob_dist=rob_dist
-            )
+    for cc in tqdm(nx.connected_components(Gf), desc='Connecting small components'):  # connect all small components
+        if len(cc) <= small_component:
+            for n in cc:
+                neigh = [(nbr, filter_edge(G[n][nbr], sigma_mul)) for nbr in G[n]]
+                neigh.sort(key=lambda x: x[1]['rob_dist'])
+                for v, edge_dat in neigh[:small_comp_add]:
+                    if edge_dat['rob_dist'] < robdist_clip:
+                        Gf.add_edge(n, v, **edge_dat)
 
     return Gf
 
@@ -117,7 +132,7 @@ if __name__ == "__main__":
     if not os.path.exists('vis'):
         os.mkdir('vis')
 
-    Gf = filter_graph(G, minimal_corats=2, sigma_mul=SIGMA_MUL, robdist_clip=40)  # filter to compute edge costs
+    Gf = filter_graph(G, minimal_corats=4, sigma_mul=SIGMA_MUL, robdist_clip=40)  # filter to compute edge costs
 
     print('Unfiltered edges: %d' % len(G.edges))
     print('Filtered edges: %d' % len(Gf.edges))
@@ -144,10 +159,12 @@ if __name__ == "__main__":
     edges_ns = []  # corating numbers
     edges_dists = []  # edge costs
     edges_nstds = []  # edge coratings std
+    edges_close = []
     for u, v, d in Gf.edges(data=True):
         edges_ns.append(d['n'])
         edges_dists.append(d['rob_dist'])
         edges_nstds.append(d['ncorat_std'])
+        edges_close.append(d['closeness'])
 
     edges_ns = np.array(edges_ns)  # number of coratings
     edges_ns.sort()
@@ -161,11 +178,20 @@ if __name__ == "__main__":
 
     edges_dists = np.array(edges_dists)  # edge costs
     plt.hist(edges_dists, bins=100)
-    plt.title('Edge costs histogram (sigma mul %.2f)' % SIGMA_MUL)
-    plt.xlabel('Edge cost')
+    plt.title('Edge distance histogram (sigma mul %.2f)' % SIGMA_MUL)
+    plt.xlabel('Edge distance')
     plt.ylabel('# of edges')
     plt.tight_layout()
-    plt.savefig('vis/gmodel_fil_edgecost.png')
+    plt.savefig('vis/gmodel_fil_edgedist.png')
+    plt.close()
+
+    edges_close = np.array(edges_close)  # edge costs
+    plt.hist(edges_close, bins=100)
+    plt.title('Edge closeness histogram (sigma mul %.2f)' % SIGMA_MUL)
+    plt.xlabel('Edge closeness')
+    plt.ylabel('# of edges')
+    plt.tight_layout()
+    plt.savefig('vis/gmodel_fil_edgeclose.png')
     plt.close()
 
     edges_nstds = np.array(edges_nstds)  # std of coratings

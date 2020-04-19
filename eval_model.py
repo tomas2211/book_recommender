@@ -93,7 +93,7 @@ if __name__ == "__main__":
     parser.add_argument('--gmodel_graphpath', default='data/corat_graph_18-04-2020_1655')
     parser.add_argument('--gmodel_sigmul', default=1.0, type=float)
     parser.add_argument('--gmodel_robdist_clip', default=40, type=float)
-    parser.add_argument('--gmodel_minimal_corats', default=2, type=float)
+    parser.add_argument('--gmodel_minimal_corats', default=3, type=float)
 
     parser.add_argument('--n2vmodel_embed_fn', default='', type=str)
 
