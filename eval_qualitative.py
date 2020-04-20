@@ -1,68 +1,83 @@
-import matplotlib.pyplot as plt
-import numpy as np
-from models.pmodel import Pmodel
-from tqdm import tqdm
-import pickle
-from data_utils import load_ratings
-from models.gmodel import Gmodel
-from models.n2vmodel import N2Vmodel
-from models.knn_model import KNNmodel
-from pandarallel import pandarallel
 import argparse
 import os
-import pandas as pd
+import textwrap
 
+from tabulate import tabulate
 
-# From ISBN finder:
-#  Douglas Adams: Hitchhikers's Guide to the Galaxy - 0671527215; mean rating 8.58 (26)
-#  ALLAN ZOLA KRONZEK: The Sorcerer's Companion: A Guide to the Magical World of Harry Potter - 0767908473; mean rating 7.91 (11)
-#  J. R. R. Tolkien: The Hobbit (Young Adult edition, Sis cover) - 061815082X; mean rating 8.23 (13)
-#  Chaim Potok: The Chosen - 0449213447; mean rating 8.12 (26)
+from data_utils import load_ratings
+from models.gmodel import Gmodel
+from models.knn_model import KNNmodel
+from models.n2vmodel import N2Vmodel
+from models.pmodel import Pmodel
+from util_scripts.isbn_finder import ISBN_Finder
 
 test_queries = [
-    # '0671527215',
-    # '0767908473',
-    # '061815082X',
-    # '0449213447',
+    '0671527215',  # Douglas Adams: Hitchhikers's Guide to the Galaxy
+    '0767908473',  # ALLAN ZOLA KRONZEK: The Sorcerer's Companion: A Guide to the Magical World of Harry Potter
+    '061815082X',  # J. R. R. Tolkien: The Hobbit (Young Adult edition, Sis cover)
+    '0449213447',  # Chaim Potok: The Chosen
     '0156528207',  # Little Prince
-    '0618002227'  # The fellowship...
+    '0618002227'  # The fellowship of the ring
 ]
 
-ratings, isbns_filtered, test_useridx, train_useridx = load_ratings()
-ratings_filtered = ratings[ratings.ISBN.isin(isbns_filtered)]
-ratings_train = ratings_filtered[~ratings_filtered['User-ID'].isin(test_useridx)]
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--interactive', action='store_true')
+    parser.set_defaults(interactive=False)
+    parser.add_argument('--format', action='store_true')
+    parser.set_defaults(format=False)
+    args = parser.parse_args()
 
-df_books = pd.read_csv(
-    'data/BX-Books.csv',
-    usecols=['ISBN', 'Book-Title', 'Book-Author'],
-    sep=';',
-    encoding='latin-1',
-    index_col='ISBN'
-)
+    if args.interactive:
+        print('Loading...')
 
-models = [
-    Pmodel(ratings_train, sigma_mul=0.1, implicit_means_like=False, thresh_like_rating=5),
-    Gmodel(sigma_mul=0.1, minimal_corats=3),
-    N2Vmodel(),
-    KNNmodel(ratings_train)
-]
+    ratings, isbns_filtered, test_useridx, train_useridx = load_ratings()
+    ratings_filtered = ratings[ratings.ISBN.isin(isbns_filtered)]
+    ratings_train = ratings_filtered[~ratings_filtered['User-ID'].isin(test_useridx)]
 
-for q_isbn in test_queries:
-    print('Query: {}'.format(q_isbn))
+    isbn_finder = ISBN_Finder('data/BX-Books.csv', isbns_filtered)
 
-    model_resp = []
-    for m in models:
-        out = m(q_isbn, ret_k=5, fill_to_k=True)
-        model_resp.append(
-            [
-                '{}: {}'.format(auth, tit) for auth, tit in
-                zip(df_books.reindex(out)['Book-Author'], df_books.reindex(out)['Book-Title'])
-            ]
-        )
+    models = [
+        Pmodel(ratings_train, sigma_mul=0.1, implicit_means_like=False, thresh_like_rating=5),
+        Gmodel(sigma_mul=0.1, minimal_corats=3),
+        N2Vmodel(),
+        KNNmodel(ratings_train)
+    ]
 
 
-    for row in zip(*model_resp):
-        print('\t'.join(row))
+    def process_query(q_isbn):
+        print('Query: {} - {}'.format(q_isbn, isbn_finder.isbn2name(q_isbn)))
+
+        model_resp = []
+        for m in models:
+            output = m(q_isbn, ret_k=5, fill_to_k=True)
+            model_resp.append([isbn_finder.isbn2name(isbn) for isbn in output])
+
+        if args.format:
+            try:
+                width = (os.get_terminal_size().columns - 4) // 4 - 2
+            except:
+                width = (120 // 4) - 2
+            resp_transp_warp = [[textwrap.fill(mod[i], width) for mod in model_resp] for i in range(5)]
+            print(tabulate(resp_transp_warp, headers=['Pmodel', 'Gmodel', 'N2Vmodel', 'KNN model'], showindex="always"))
+        else:
+            for row in zip(*model_resp):
+                print('\t'.join(row))
 
 
+    if args.interactive:
+        print('---------- INTERACTIVE MODE ----------')
+        print('Ctrl+C/Write \'end\' to end.')
+        if not args.format:
+              print('Showing first five responses in columns: pmodel, gmodel, n2vmodel, knnmodel separated by tabs.')
+        print('--------------------------------------')
 
+        q_name = input('Query name: ')
+        while q_name.lower() != 'end':
+            q_isbn = isbn_finder.name2isbn(q_name)
+            process_query(q_isbn)
+            q_name = input('Query name: ')
+
+    else:
+        for q_isbn in test_queries:
+            process_query(q_isbn)
