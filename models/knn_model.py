@@ -1,8 +1,11 @@
+import pickle
+
 import pandas as pd
 from scipy.sparse import csr_matrix
 from sklearn.neighbors import NearestNeighbors
+
 from data_utils import load_ratings
-import pickle
+
 
 class KNNmodel:
     def __init__(self, ratings: pd.DataFrame):
@@ -38,5 +41,9 @@ if __name__ == '__main__':
     ratings_train = ratings_filtered[~ratings_filtered['User-ID'].isin(test_useridx)]
     model = KNNmodel(ratings_train)
 
-    with open('knnmodel.pickle', 'wb') as f:
-        pickle.dump(model, f)
+    with open('gcp_app/knnmodel.pickle', 'wb') as f:  # Export for GCP app
+        pickle.dump({
+            'model': model.model,
+            'isbn_indexes': model.isbn_indexes,
+            'book_feats': model.book_feats
+        }, f)

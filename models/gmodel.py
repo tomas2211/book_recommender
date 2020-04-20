@@ -9,7 +9,7 @@ import os
 
 
 class Gmodel():
-    def __init__(self, graph_path='data/corat_graph_18-04-2020_1655', sigma_mul=1.0, robdist_clip=40, minimal_corats=3):
+    def __init__(self, graph_path='data/corat_graph_18-04-2020_1655', sigma_mul=0.1, robdist_clip=40, minimal_corats=3):
         G = nx.read_gpickle(graph_path)
         self.Gf = filter_graph(G, minimal_corats=minimal_corats, sigma_mul=sigma_mul, robdist_clip=robdist_clip)
         self.nodes_by_deg = \

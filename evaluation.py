@@ -91,16 +91,16 @@ if __name__ == "__main__":
     parser.add_argument('--pmodel_implicit_is_like', action='store_true',
                         help='Pmodel parameter - implicit rating means user likes book.')
     parser.set_defaults(pmodel_implicit_is_like=False)
-    parser.add_argument('--pmodel_sigmul', default=1.0, type=float, help='Pmodel parameter - sigma multiplier')
+    parser.add_argument('--pmodel_sigmul', default=0.1, type=float, help='Pmodel parameter - sigma multiplier')
 
     parser.add_argument('--gmodel_graphpath', default='data/corat_graph_18-04-2020_1655',
                         help='Gmodel parameter - path to processed graph')
-    parser.add_argument('--gmodel_sigmul', default=1.0, type=float, help='Gmodel parameter - sigma multiplier')
+    parser.add_argument('--gmodel_sigmul', default=0.1, type=float, help='Gmodel parameter - sigma multiplier')
     parser.add_argument('--gmodel_robdist_clip', default=40, type=float, help='Gmodel parameter - distance clipping')
     parser.add_argument('--gmodel_minimal_corats', default=3, type=float,
                         help='Gmodel parameter - minimal number of coratings')
 
-    parser.add_argument('--n2vmodel_embed_fn', default='n2vsave/node2vec_dict', type=str,
+    parser.add_argument('--n2vmodel_embed_fn', default='data/node2vec_dict', type=str,
                         help='N2V model parameter - path to embeddings')
 
     args = parser.parse_args()

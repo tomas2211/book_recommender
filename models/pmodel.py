@@ -5,7 +5,7 @@ class Pmodel:
     def __init__(
             self, ratings: pd.DataFrame,
             thresh_like_rating=5,
-            sigma_mul=1.0,
+            sigma_mul=0.1,
             implicit_means_like=False
     ):
         self.thresh_like_rating = thresh_like_rating

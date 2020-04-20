@@ -38,8 +38,8 @@ if __name__ == '__main__':
     isbn_finder = ISBN_Finder('data/BX-Books.csv', isbns_filtered)
 
     models = [
-        Pmodel(ratings_train, sigma_mul=0.1, implicit_means_like=False, thresh_like_rating=5),
-        Gmodel(sigma_mul=0.1, minimal_corats=3),
+        Pmodel(ratings_train),
+        Gmodel(),
         N2Vmodel(),
         KNNmodel(ratings_train)
     ]
