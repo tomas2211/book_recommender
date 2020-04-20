@@ -1,15 +1,17 @@
-import matplotlib.pyplot as plt
-import numpy as np
-from models.pmodel import Pmodel
-from tqdm import tqdm
-import pickle
-from data_utils import load_ratings
-from models.gmodel import Gmodel
-from models.n2vmodel import N2Vmodel
-from models.knn_model import KNNmodel
-from pandarallel import pandarallel
 import argparse
 import os
+import pickle
+
+import matplotlib.pyplot as plt
+import numpy as np
+from pandarallel import pandarallel
+from tqdm import tqdm
+
+from data_utils import load_ratings
+from models.gmodel import Gmodel
+from models.knn_model import KNNmodel
+from models.n2vmodel import N2Vmodel
+from models.pmodel import Pmodel
 
 
 def evaluate(model, args, test_useridx, ratings_test):
@@ -81,21 +83,25 @@ def evaluate(model, args, test_useridx, ratings_test):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--out_folder', default='eval', help="Folder to evaluation images.")
-    parser.add_argument('--model', required=True, type=str, help="Folder to save images.")
-    parser.add_argument('--K', required=True, type=int)
-    parser.add_argument('--like_threshold', default=5, type=float)
+    parser.add_argument('--out_folder', default='eval', help="Folder to store evaluation files.")
+    parser.add_argument('--model', required=True, type=str, help="Model to evaluate [pmodel|gmodel|n2vmodel|knnmodel]")
+    parser.add_argument('--K', required=True, type=int, help="Number of queried results")
+    parser.add_argument('--like_threshold', default=5, type=float, help="Rating threshold for \'liked\' books")
 
-    parser.add_argument('--pmodel_implicit_is_like', action='store_true')
+    parser.add_argument('--pmodel_implicit_is_like', action='store_true',
+                        help='Pmodel parameter - implicit rating means user likes book.')
     parser.set_defaults(pmodel_implicit_is_like=False)
-    parser.add_argument('--pmodel_sigmul', default=1.0, type=float)
+    parser.add_argument('--pmodel_sigmul', default=1.0, type=float, help='Pmodel parameter - sigma multiplier')
 
-    parser.add_argument('--gmodel_graphpath', default='data/corat_graph_18-04-2020_1655')
-    parser.add_argument('--gmodel_sigmul', default=1.0, type=float)
-    parser.add_argument('--gmodel_robdist_clip', default=40, type=float)
-    parser.add_argument('--gmodel_minimal_corats', default=3, type=float)
+    parser.add_argument('--gmodel_graphpath', default='data/corat_graph_18-04-2020_1655',
+                        help='Gmodel parameter - path to processed graph')
+    parser.add_argument('--gmodel_sigmul', default=1.0, type=float, help='Gmodel parameter - sigma multiplier')
+    parser.add_argument('--gmodel_robdist_clip', default=40, type=float, help='Gmodel parameter - distance clipping')
+    parser.add_argument('--gmodel_minimal_corats', default=3, type=float,
+                        help='Gmodel parameter - minimal number of coratings')
 
-    parser.add_argument('--n2vmodel_embed_fn', default='', type=str)
+    parser.add_argument('--n2vmodel_embed_fn', default='n2vsave/node2vec_dict', type=str,
+                        help='N2V model parameter - path to embeddings')
 
     args = parser.parse_args()
 
@@ -146,7 +152,7 @@ if __name__ == "__main__":
         with open(eval_rec_fn, 'rb') as f:
             eval_record = pickle.load(f)
 
-    # Statistics
+    # Create histograms and store the results
     users_ndcg = eval_record['users_ndcg']
     users_ndcg_wh = eval_record['users_ndcg_wh']
     users_ndcg_max = eval_record['users_ndcg_max']
