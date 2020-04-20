@@ -30,4 +30,4 @@ The kNN model is reachable through a simple API (change book-name to query):
 
 Pass 'format' parameter for a human-readable response:
 
-[https://abiding-ripple-272918.ew.r.appspot.com/query?format=1&name=book-name](https://abiding-ripple-272918.ew.r.appspot.com/query?name=book-name)
+[https://abiding-ripple-272918.ew.r.appspot.com/query?format=1&name=book-name](https://abiding-ripple-272918.ew.r.appspot.com/query?format=1&name=book-name)
