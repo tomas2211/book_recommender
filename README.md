@@ -8,7 +8,7 @@ Using [Book-Crossing Dataset](http://www2.informatik.uni-freiburg.de/~cziegler/B
 
 ## Setup
 
-1. Clone the repo `git@github.com:tomas2211/ds_books.git`
+1. Clone the repo `git@github.com:tomas2211/book_recommender.git`
 2. Install requrements `pip install -r requirements.txt`
 3. Download and unzip the dataset & trained models `./download_data.sh`
 4. (Not required - only when training node2vec model `git submodule init && git submodule update`)
