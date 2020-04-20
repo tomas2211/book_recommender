@@ -38,9 +38,9 @@ class isbn2name:
         except KeyError:
             return None
 
-        return resp['Book-Author'] + ': ' + resp['Book-Title']
+        return '{}: {}'.format(resp['Book-Author'], resp['Book-Title'])
 
     def name2isbn(self, name):
         name = name.lower()
-        distances = self.df_books['Book-Title'].apply(lambda x: fuzz.ratio(x.lower(), name))
+        distances = self.df_books['Book-Title'].apply(lambda x: fuzz.ratio(str(x).lower(), name))
         return distances.idxmax()

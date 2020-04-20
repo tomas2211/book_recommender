@@ -13,12 +13,12 @@ i2n = model.isbn2name()
 @app.route('/query')
 def root():
     name = request.args.get('name')
-    isbn = i2n.name2isbn(name)
+    if name is None:
+        return 'Error: missing parameter \'name\''
+
+    isbn = i2n.name2isbn(str(name))
     q_name = i2n.isbn2name(isbn)
     out_isbn, out_scores = mod(isbn, ret_k=5, ret_scores=True, fill_to_k=True)
-
-    if out_isbn is None:
-        return 'Error'
 
     ret_names = [i2n.isbn2name(isbn) for isbn in out_isbn]
 
