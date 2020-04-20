@@ -5,3 +5,4 @@ __pycache__
 vis
 eval
 n2v_save
+*.pyc

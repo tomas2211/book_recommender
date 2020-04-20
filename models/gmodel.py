@@ -69,7 +69,7 @@ def filter_edge(d, sigma_mul=1.0):
     }
 
 
-def filter_graph(G, minimal_corats=2, sigma_mul=1.0, robdist_clip=40, small_component=4, small_comp_add=3):
+def filter_graph(G, minimal_corats=3, sigma_mul=0.1, robdist_clip=40, small_component=4, small_comp_add=3):
     Gf = nx.Graph()
     Gf.add_nodes_from(G.nodes)
 
@@ -94,7 +94,6 @@ def filter_graph(G, minimal_corats=2, sigma_mul=1.0, robdist_clip=40, small_comp
 
 if __name__ == "__main__":
     GRAPHGEN_MAX_USER_NRAT = 1000
-    SIGMA_MUL = 1.0
 
     ratings, isbns_filtered, test_useridx, train_useridx = load_ratings()
 
@@ -132,7 +131,8 @@ if __name__ == "__main__":
     if not os.path.exists('../vis'):
         os.mkdir('../vis')
 
-    Gf = filter_graph(G, minimal_corats=4, sigma_mul=SIGMA_MUL, robdist_clip=40)  # filter to compute edge costs
+    SIGMA_MUL = 0.1
+    Gf = filter_graph(G, minimal_corats=3, sigma_mul=SIGMA_MUL, robdist_clip=40)  # filter to compute edge costs
 
     print('Unfiltered edges: %d' % len(G.edges))
     print('Filtered edges: %d' % len(Gf.edges))
@@ -177,6 +177,7 @@ if __name__ == "__main__":
     plt.close()
 
     edges_dists = np.array(edges_dists)  # edge costs
+    edges_dists = edges_dists[edges_dists < 5]
     plt.hist(edges_dists, bins=100)
     plt.title('Edge distance histogram (sigma mul %.2f)' % SIGMA_MUL)
     plt.xlabel('Edge distance')

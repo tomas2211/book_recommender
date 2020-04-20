@@ -20,10 +20,12 @@ import pandas as pd
 #  Chaim Potok: The Chosen - 0449213447; mean rating 8.12 (26)
 
 test_queries = [
-    '0671527215',
-    '0767908473',
-    '061815082X',
-    '0449213447'
+    # '0671527215',
+    # '0767908473',
+    # '061815082X',
+    # '0449213447',
+    '0156528207',  # Little Prince
+    '0618002227'  # The fellowship...
 ]
 
 ratings, isbns_filtered, test_useridx, train_useridx = load_ratings()
@@ -51,7 +53,12 @@ for q_isbn in test_queries:
     model_resp = []
     for m in models:
         out = m(q_isbn, ret_k=5, fill_to_k=True)
-        model_resp.append(df_books.loc[out]['Book-Author'].array + ": " + df_books.loc[out]['Book-Title'].array)
+        model_resp.append(
+            [
+                '{}: {}'.format(auth, tit) for auth, tit in
+                zip(df_books.reindex(out)['Book-Author'], df_books.reindex(out)['Book-Title'])
+            ]
+        )
 
 
     for row in zip(*model_resp):

@@ -40,3 +40,15 @@ with open('../data/testtrain.pickle', 'wb') as f:
         },
         f
     )
+
+# Export filtered ISBNs for GCP app
+
+df_books = pd.read_csv(
+    'data/BX-Books.csv',
+    usecols=['ISBN', 'Book-Title', 'Book-Author'],
+    sep=';',
+    encoding='latin-1',
+    index_col='ISBN'
+)
+
+df_books.loc[isbns_filtered].to_csv('gcp_app/book_names.csv')
