@@ -24,10 +24,11 @@ The four tested models will be loaded, and you will be able to enter queries (bo
 
 
 ## API
-The kNN model is reachable through a simple API (change book-name to query):
+The kNN model is reachable through a simple API.
 
-[https://abiding-ripple-272918.ew.r.appspot.com/query?name=book-name](https://abiding-ripple-272918.ew.r.appspot.com/query?name=book-name)
+[SwaggerHub documentation.](https://app.swaggerhub.com/apis-docs/novakt/book_recommender/)
 
-Pass 'format' parameter for a human-readable response:
+**TLDR:** [https://abiding-ripple-272918.ew.r.appspot.com/query?name=book-name](https://abiding-ripple-272918.ew.r.appspot.com/query?name=book-name)
 
+*Protip:* pass 'format' parameter for a human-readable response: 
 [https://abiding-ripple-272918.ew.r.appspot.com/query?format=1&name=book-name](https://abiding-ripple-272918.ew.r.appspot.com/query?format=1&name=book-name)
