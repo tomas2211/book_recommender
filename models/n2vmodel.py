@@ -5,7 +5,6 @@ import gensim
 import networkx as nx
 from gensim.models import Word2Vec
 
-import node2vec.src.node2vec as n2v
 from models.gmodel import filter_graph
 
 
@@ -24,6 +23,7 @@ class N2Vmodel:
 
 if __name__ == '__main__':
     import logging
+    import node2vec.src.node2vec as n2v
 
     # Generate random walks and train w2v model
     graph_path = 'data/corat_graph_18-04-2020_1655'
